@@ -29,6 +29,10 @@ app.use(cors());
 // API
 app.use('/api', userAPI)
 
+app.get('/', (req, res) =>{
+  return res.send("<h1>Hello World<h1>");
+})
+
 // Create port
 const port = process.env.port || 4000;
 const server = app.listen(port, () => {
