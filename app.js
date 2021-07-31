@@ -2,9 +2,10 @@ let express = require('express'),
   cors = require('cors'),
   mongoose = require('mongoose'),
   database = require('./database'),
-  bodyParser = require('body-parser');
+  bodyParser = require('body-parser'),
+  passport = require('passport');
 
-  // Connect to the mongoDb
+// Connect to mongoDb
 mongoose.Promise = global.Promise;
 mongoose.connect(database.db, {
   useNewUrlParser: true,
@@ -16,7 +17,7 @@ mongoose.connect(database.db, {
     console.error("Couldn't connect to databse: ", error)
   })
 
-  //initialize app
+// Initialize app
 const userAPI = require('./routes/user.route')
 const app = express();
 
@@ -26,10 +27,11 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(cors());
 
-//API
+app.use(passport.initialize());
+require('./passport')(passport);
+
+// API
 app.use('/api/users', userAPI);
-
-
 
 // Create port
 const port = process.env.port || 4000;
