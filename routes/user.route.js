@@ -1,66 +1,56 @@
 const express = require('express');
 const userRoute = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+const User = require('../models/User');
 
-// model
-let UserModel = require('../models/User');
+/**
+ * @route POST user.route/register
+ * @desc Register the User
+ * @access Public
+ */
 
-// inserts user into database
-userRoute.route('/create-user').post((req, res, next) => {
-  UserModel.create(req.body, (error, data) => {
-  if (error) {
-    return next(error)
-  } else {
-    res.json(data)
-  }
-})
-});
-
-// retrieves ALL job posts
-userRoute.route('/').get((req, res, next) => {
-    UserModel.find((error, data) => {
-     if (error) {
-       return next(error)
-     } else {
-       res.json(data)
-     }
-   })
- })
-
-// edits job post
-userRoute.route('/edit-user/:id').get((req, res, next) => {
-   UserModel.findById(req.params.id, (error, data) => {
-    if (error) {
-      return next(error)
-    } else {
-      res.json(data)
-    }
-  })
-})
-
-// Update
-userRoute.route('/update-user/:id').post((req, res, next) => {
-  UserModel.findByIdAndUpdate(req.params.id, {
-    $set: req.body
-  }, (error, data) => {
-    if (error) {
-      return next(error);
-    } else {
-      res.json(data)
-    }
-  })
-})
-
-// Delete
-userRoute.route('/delete-user/:id').delete((req, res, next) => {
-  UserModel.findByIdAndRemove(req.params.id, (error, data) => {
-    if (error) {
-      return next(error);
-    } else {
-      res.status(200).json({
-        msg: data
-      })
-    }
-  })
-})
+// Register the User
+userRoute.post('/register', (req, res) => {
+  let { 
+    email, 
+    password, 
+    confirm_password
+   } = req.body
+   if(password !== confirm_password){
+     return res.status(400).json({
+       msg: "Passwords do not match."
+     })
+   }
+   // Check for unique Email
+   User.findOne({
+     email: email
+    }).then(user =>{
+      if(user){
+        return res.status(400).json({
+          msg: "An account is already associated with this email"
+        });
+      }
+   });
+   //Register valid new user
+   let newUser = new User({
+     email,
+     password
+   });
+   //Hash the password
+   bcrypt.genSalt(10, (err, salt) =>{
+     bcrypt.hash(newUser.password, salt, (err, hash) =>{
+       if(err) throw err;
+       newUser.password = hash;
+       newUser.save().then(user =>{
+         return res.status(201).json({
+           success: true,
+           msg: "Account created."
+         });
+       });
+     });
+   });
+ });
 
 module.exports = userRoute;

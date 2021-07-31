@@ -26,27 +26,13 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(cors());
 
-// API
-app.use('/api', userAPI)
+//API
+app.use('/api/users', userAPI);
 
-app.get('/', (req, res) =>{
-  return res.send("<h1>Hello World<h1>");
-})
+
 
 // Create port
 const port = process.env.port || 4000;
 const server = app.listen(port, () => {
   console.log("Connected to port ", port)
 })
-
-// Find 404
-app.use((req, res, next) => {
-  next(createError(404));
-})
-
-// error handler
-app.use(function (err, req, res, next) {
-  console.error(err.message);
-  if (!err.statusCode) err.statusCode = 500;
-  res.status(err.statusCode).send(err.message);
-});
